@@ -49,6 +49,7 @@ Grafo Heuristica(Grafo AGM, Grafo G, int *custo);
 int verificaArvore(Grafo AGM, Grafo G, int **custo);
 void ciclo(Grafo G);
 int verificaArvore(Grafo AGM, Grafo G, int **custo);
+int custoH1(Grafo G, Grafo AGM);
 
 
 // Leitura do arquivo
