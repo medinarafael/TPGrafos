@@ -83,7 +83,6 @@ void GRAFOdestroi(Grafo G){
     free(G->adj);
     free(G->peso);
     free(G);
-
 }
 
 Grafo GRAFOleitura(const char *nomearq){
@@ -116,57 +115,70 @@ Grafo GRAFOleitura(const char *nomearq){
     return G;
 }
 
-
 int cont;
 int *ordem, *pai, *menor;
 
+int custoH1(Grafo G, Grafo AGM)
+{
+	int *grau = malloc(G->n * sizeof(int));
+	int i, j, peso=0,cont=0,maior=0;
+	int custoA;
 
+	for(i=0; i<G->n; i++)
+	{
+		grau[i] = 0;
+	}
 
-// Profundidade
-void BPrec(Grafo G){
-    int i;
-    ordem = VETORint(G->n);
-    pai = VETORint(G->n);
-    cont = 0;
+	for(i=0; i<G->n; i++)
+	{
+		for(j=0; j<G->n; j++)
+		{
+			if (AGM->adj[i][j] != 0)
+			{
+				AGM->adj[j][i] = AGM->adj[i][j];
+			}
+		}
+	}
 
-    printf("Ordem BP: ");
+	//Descobrindo grau dos vértices
+	for(i=0; i < AGM->n; i++){
+		for(j=0; j < AGM->n; j++)
+		{
+	    	if(AGM->adj[i][j] != 0)
+	      	{
+	        	grau[i]++;
+	      	}
+	    }
+	}
 
-    for (i = 0; i < G->n; i++)
-    {
-        ordem[i] = -1;
-        pai[i] = -1;
-    }
-    for (i = 0; i < G->n; i++)
-    {
-        if (ordem[i] == -1){
-        	pai[i] = i;
-            visitaBP(G,i);
-        }
-    }
-    printf("\n");
-    free(ordem);
-    free(pai);
+	//verifica o peso dos vertices internos para adicionar no custo da arvore
+	for (i = 0; i < G->n ; i++)
+	{
+		if(grau[i] > 1)
+		{
+			peso = peso + G->peso[i];
+		}
+	}
+
+	//encontra o custo da arvore atual
+	for (i = 0; i < G->n ; i++)
+	{
+		for(j = 0; j < G->n; j++)
+		{
+			if (AGM->adj[i][j] != 0)
+			{
+				cont = cont + AGM->adj[i][j];
+			}
+		}
+	}
+
+	custoA = ((cont / 2) + peso);
+	free(grau);
+  	return custoA;
 }
-
-void visitaBP(Grafo G, int v){
-    int j;
-    ordem[v] = cont++;
-    
-    printf("%d ", v);
-
-    for (j = 0; j < G->n; j++)
-    {
-        if ((G->adj[v][j] != 0) && (ordem[j] == -1)){
-        	G->adj[j][v] = 0;
-        	pai[j] = v;
-            visitaBP(G,j);
-        }    
-    }
-}
-
 
 Grafo Kruskal(Grafo G, int *custo){
-    int min, k, l, x, y;
+    int min, k, l, x, y, c;
     int *comp = malloc(G->n * sizeof(int));
     Grafo AGM = GRAFOcria(G->n); 
     Arco a;
@@ -211,9 +223,8 @@ Grafo Kruskal(Grafo G, int *custo){
         }
       }
     }
-    // imprime arvore
-    GRAFOimprime(AGM);
-    printf("** Custo AGM: %d\n", *custo);
+    c = custoH1(G, AGM);
+    printf("** Custo AGM Heuristica 1: %d\n", c);
     return(AGM);
 }
 
@@ -246,7 +257,6 @@ void ciclo(Grafo G)
 				}
 				
 			}
-			printf("Retirou o vertice %d\n", i);
 			ciclo(G);
 		}
 		cont = 0;
@@ -270,7 +280,6 @@ void ciclo(Grafo G)
 
 int verificaArvore(Grafo AGM, Grafo G, int **custo)
 { 
-
 	int *grau = malloc(G->n * sizeof(int));
 	int i, j, peso=0,cont=0,maior=0;
 	int custoA;
@@ -279,6 +288,7 @@ int verificaArvore(Grafo AGM, Grafo G, int **custo)
 	{
 		grau[i] = 0;
 	}
+
 	//Descobrindo grau dos vértices
 	for(i=0; i < AGM->n; i++){
 		for(j=0; j < AGM->n; j++)
@@ -290,15 +300,7 @@ int verificaArvore(Grafo AGM, Grafo G, int **custo)
 	    }
 	}
 
-	printf("Grau dos vertices:\n");
-	for (i=0;i < G->n; i++)
-	{
-		printf("%d ", grau[i]);
-	}
-	printf("\n");
-
 	//verifica o peso dos vertices internos para adicionar no custo da arvore
-
 	for (i = 0; i < G->n ; i++)
 	{
 		if(grau[i] > 1)
@@ -320,112 +322,19 @@ int verificaArvore(Grafo AGM, Grafo G, int **custo)
 	}
 	custoA = ((cont / 2) + peso);
 
-  	printf("** Custo Heuristica, etapa atual: %d\n", custoA);
-
-  	return custoA;
-
-
-
-
-
-
-  //Adicionando o peso dos vértices  no custo da AGM dos vertices que possuem grau2
-  /*for(i=0; i < AGM->n; i++)
-  {
-  	for(j=0; j < AGM->n; j++)
-  	{
-    	if(AGM->adj[i][j]!=0)
-    	{
-        	if((grau[i] == 2) && (grau[j] == 2))
-        	{
-          		peso = peso + G->peso[i] + G->peso[j];
-        	}
-        	else
-        	{
-        		if(grau[i] == 2)
-        		{
-            		peso += G->peso[i];
-        		}
-          		else
-          		{
-            		if(grau[j] == 2)
-            		{
-              			peso += G->peso[j];
-            		}
-          		}
-        	}
-      	}
-    }
-  }
-  for(i=0; i < AGM->n; i++)
-  {
-  	for(j=0; j < AGM->n; j++)
-  	{
-    	if(AGM->adj[i][j]!=0)
-    	{
-        	if((grau[i] == 2) && (grau[j] == 2))
-        	{
-          		peso = peso + G->peso[i] + G->peso[j];
-        	}
-        	else
-        	{
-          		if(grau[i] == 2)
-          		{
-            		peso += G->peso[i];
-          		}
-          		else
-          		{
-            		if(grau[j] == 2)
-            		{
-              			peso += G->peso[j];
-            		}
-          		}
-        	}
-      	}
-    }
-  }
-
-  /*for(i=0; i < AGM->n; i++)
-  {
-  	for(j=0; j < AGM->n; j++)
-  	{
-    	if(AGM->adj[i][j]!=0)
-    	{
-        	if((grau[i] == 1) && (grau[j] == 1))
-        	{
-          		peso = peso - G->peso[i] - G->peso[j];
-        	}
-        	else
-        	{
-          		if(grau[i] == 1)
-          		{
-            		peso -= G->peso[i];
-          		}
-          		else
-          		{
-            		if(grau[j] == 1)
-            		{
-              			peso -= G->peso[j];
-            		}
-          		}
-        	}
-      	}
-    }
-  }*/
-
-  
+  	return custoA;  
 }
 
 
 
 Grafo Heuristica(Grafo AGM, Grafo G,int *custo)
 {
-
   	int i,j,k,l,peso=0,cont=0,maior=0;
   	int custoA, custoAGM = INF;
   	
   	Arco a;
   	Grafo AGMaux = GRAFOcria(G->n); // cria uma AGM auxiliar
+  	
   	for(i=0;i < G->n; i++)
 	{
 	//copia a AGM
@@ -439,39 +348,25 @@ Grafo Heuristica(Grafo AGM, Grafo G,int *custo)
 			}	
 		}
 	}
-	
-  	
-  
 
   //encontra uma aresta do grafo que não existe na AGM
   for (i = 0; i < G->n; i++)
   {
   	for (j = 0; j < G->n; j++)
   	{
-
   		if ((G->adj[i][j] != 0) && (AGM->adj[i][j] == 0))
   		{
   			/*adiciona a aresta, formando um ciclo*/
   			AGMaux->adj[i][j] = G->adj[i][j];
   			AGMaux->adj[j][i] = AGMaux->adj[i][j];
 
-  			printf("\nAresta adicionada %d - %d\n", i,j);
   			//detecta o ciclo que foi criado com a adição da aresta
   			ciclo(AGMaux);
-
-  			printf("CiCLO\n");
-		  	GRAFOimprime(AGMaux);
-		  	printf("\n");
-  			
-  			
 
   			AGM->adj[i][j] = G->adj[i][j];
   			//retira a maior aresta do ciclo
   			AGM->adj[vM][wM] = 0;
   			AGM->adj[wM][vM] = 0;
-
-  			
-  			printf("Aresta retirada %d - %d\n\n", vM, wM);
   			
   			//zera a AGMaux
   			for(k=0; k<G->n;k++)
@@ -502,23 +397,11 @@ Grafo Heuristica(Grafo AGM, Grafo G,int *custo)
   			{
   				custoAGM = custoA;
   			}
-
   		}
-  	}
-
-  	printf("Custo da Heuristica:  %d\n", custoAGM);
-  	GRAFOimprime(AGMaux);
+  	} 	
   }
 
-  
-
-
-
+  printf("Custo da Heuristica 2:  %d\n", custoAGM);
 /**********************************************************************************************************/
-
-
-
-
-  
   return(AGM);
 }
