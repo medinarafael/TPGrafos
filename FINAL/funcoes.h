@@ -47,6 +47,8 @@ void visitaBP(Grafo G, int v);
 Grafo Kruskal(Grafo G,int *custo);
 Grafo Heuristica(Grafo AGM, Grafo G, int *custo);
 int verificaArvore(Grafo AGM, Grafo G, int **custo);
+void ciclo(Grafo G);
+int verificaArvore(Grafo AGM, Grafo G, int **custo);
 
 
 // Leitura do arquivo
